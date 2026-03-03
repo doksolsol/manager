@@ -18,7 +18,7 @@
             cursor: pointer;
         }
         .slot-16-9 { aspect-ratio: 16 / 9; }
-        .slot-portrait-container { aspect-ratio: 9 / 20.5; } /* 왼쪽 2x2 높이에 맞춘 비율 */
+        .slot-portrait-container { aspect-ratio: 9 / 20.5; }
         
         .photo-slot img {
             width: 100%;
@@ -41,13 +41,25 @@
             -webkit-appearance: none;
             margin: 0;
         }
+        /* 모달 스타일 */
+        #resultModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 50;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-10 font-sans">
     <div class="max-w-md mx-auto p-4">
         <header class="mb-6 text-center pt-4">
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">PHOTO MERGER</h1>
-            <p class="text-sm text-slate-500 font-medium">Site Inspection Report Tool</p>
+            <p class="text-sm text-slate-500 font-medium">에어컨 설치 현장 정리 도구</p>
         </header>
 
         <!-- 입력 섹션 -->
@@ -55,49 +67,47 @@
             <div class="flex items-center justify-between gap-4">
                 <div class="flex-1">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Building (동)</label>
-                    <input type="number" id="dong" pattern="\d*" placeholder="000" class="w-full bg-slate-50 border-none rounded-xl p-4 text-2xl font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="number" id="dong" pattern="\d*" inputmode="numeric" placeholder="101" class="w-full bg-slate-50 border-none rounded-xl p-4 text-2xl font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
                 <div class="text-2xl font-black text-slate-300 mt-5">-</div>
                 <div class="flex-1">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Unit (호)</label>
-                    <input type="number" id="ho" pattern="\d*" placeholder="000" class="w-full bg-slate-50 border-none rounded-xl p-4 text-2xl font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="number" id="ho" pattern="\d*" inputmode="numeric" placeholder="1001" class="w-full bg-slate-50 border-none rounded-xl p-4 text-2xl font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
             </div>
         </div>
 
-        <!-- 사진 배치 영역 (미리보기용 레이아웃) -->
+        <!-- 사진 배치 영역 -->
         <div class="flex gap-2 mb-8">
-            <!-- 왼쪽: 가로 사진 4개 (2x2) -->
             <div class="w-2/3 grid grid-cols-1 gap-2">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="photo-slot slot-16-9" onclick="triggerInput('file-room3')">
-                        <span id="text-room3" class="text-slate-400 text-xs font-bold">방 3</span>
+                        <span id="text-room3" class="text-slate-400 text-xs font-bold text-center">방 3<br>(가로)</span>
                         <img id="img-room3" class="hidden">
                         <span class="slot-label">방 3</span>
                     </div>
                     <div class="photo-slot slot-16-9" onclick="triggerInput('file-room2')">
-                        <span id="text-room2" class="text-slate-400 text-xs font-bold">방 2</span>
+                        <span id="text-room2" class="text-slate-400 text-xs font-bold text-center">방 2<br>(가로)</span>
                         <img id="img-room2" class="hidden">
                         <span class="slot-label">방 2</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="photo-slot slot-16-9" onclick="triggerInput('file-living')">
-                        <span id="text-living" class="text-slate-400 text-xs font-bold">거실</span>
+                        <span id="text-living" class="text-slate-400 text-xs font-bold text-center">거실<br>(가로)</span>
                         <img id="img-living" class="hidden">
                         <span class="slot-label">거실</span>
                     </div>
                     <div class="photo-slot slot-16-9" onclick="triggerInput('file-room1')">
-                        <span id="text-room1" class="text-slate-400 text-xs font-bold">방 1</span>
+                        <span id="text-room1" class="text-slate-400 text-xs font-bold text-center">방 1<br>(가로)</span>
                         <img id="img-room1" class="hidden">
                         <span class="slot-label">방 1</span>
                     </div>
                 </div>
             </div>
-            <!-- 오른쪽: 세로 실외기실 -->
             <div class="w-1/3">
                 <div class="photo-slot h-full slot-portrait-container" onclick="triggerInput('file-ac')">
-                    <span id="text-ac" class="text-slate-400 text-xs font-bold text-center px-2">실외기실<br>(세로)</span>
+                    <span id="text-ac" class="text-slate-400 text-xs font-bold text-center px-2">실외기<br>(세로)</span>
                     <img id="img-ac" class="hidden">
                     <span class="slot-label">실외기</span>
                 </div>
@@ -111,11 +121,18 @@
         <input type="file" id="file-room1" accept="image/*" class="hidden" onchange="handleImage(this, 'room1')">
         <input type="file" id="file-ac" accept="image/*" class="hidden" onchange="handleImage(this, 'ac')">
 
-        <button onclick="generateImage()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 active:scale-[0.98] transition-all text-lg uppercase tracking-wider">
-            Generate Report
+        <button onclick="generateImage()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl shadow-xl active:scale-[0.98] transition-all text-lg uppercase tracking-wider">
+            이미지 생성하기
         </button>
 
         <canvas id="resultCanvas" class="hidden"></canvas>
+    </div>
+
+    <!-- 결과 확인 모달 -->
+    <div id="resultModal" onclick="closeModal()">
+        <p class="text-white mb-4 text-center font-bold">이미지를 길게 눌러 <br> '사진 앱에 저장' 하세요</p>
+        <img id="finalPreview" class="max-w-full max-h-[70vh] rounded-lg shadow-2xl border-4 border-white">
+        <button class="mt-8 bg-white text-black px-8 py-3 rounded-full font-bold">닫기</button>
     </div>
 
     <script>
@@ -141,58 +158,65 @@
             }
         }
 
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
         function generateImage() {
-            const dong = document.getElementById('dong').value || '000';
-            const ho = document.getElementById('ho').value || '000';
+            const dong = document.getElementById('dong').value || '---';
+            const ho = document.getElementById('ho').value || '---';
             
             if (!Object.values(images).every(img => img !== null)) {
-                alert('모든 사진을 등록해주세요.');
+                alert('5장의 사진을 모두 선택해주세요.');
                 return;
             }
 
             const canvas = document.getElementById('resultCanvas');
             const ctx = canvas.getContext('2d');
 
-            // 규격 정의
             const landscapeW = 1280;
             const landscapeH = 720;
             const padding = 60;
-            const headerH = 300; // 헤더 영역 확장
+            const headerH = 280; 
 
-            // 오른쪽 세로 사진의 높이는 (가로사진 2개 높이 + 사이 패딩)과 같아야 함
             const portraitH = (landscapeH * 2) + padding;
-            const portraitW = (portraitH * 9) / 16; // 9:16 비율 유지
+            const portraitW = (portraitH * 9) / 16; 
 
-            // 전체 캔버스 사이즈 계산
             canvas.width = (landscapeW * 2) + portraitW + (padding * 4);
             canvas.height = headerH + (landscapeH * 2) + (padding * 3);
 
-            // 배경 그리기
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 헤더 스타일 (매우 크게)
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'black 160px sans-serif';
+            // 헤더 텍스트 (버그 수정: font 가중치 숫자로 변경)
             ctx.textAlign = 'left';
-            ctx.fillText(`${dong}`, padding, 180);
             
-            ctx.font = 'bold 80px sans-serif';
-            ctx.fillStyle = '#64748b';
-            ctx.fillText(`동`, padding + ctx.measureText(dong).width + 20, 180);
-
-            const hoStartPos = padding + ctx.measureText(dong).width + 150;
+            // 동 숫자
             ctx.fillStyle = '#0f172a';
-            ctx.font = 'black 160px sans-serif';
-            ctx.fillText(`${ho}`, hoStartPos, 180);
+            ctx.font = '900 160px sans-serif';
+            ctx.fillText(dong, padding, 180);
             
-            ctx.font = 'bold 80px sans-serif';
+            // "동" 텍스트
+            const dongNumWidth = ctx.measureText(dong).width;
             ctx.fillStyle = '#64748b';
-            ctx.fillText(`호 점검 리포트`, hoStartPos + ctx.measureText(ho).width + 20, 180);
+            ctx.font = '700 80px sans-serif';
+            ctx.fillText('동', padding + dongNumWidth + 20, 180);
+
+            // 호 숫자
+            const hoStartPos = padding + dongNumWidth + 180;
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '900 160px sans-serif';
+            ctx.fillText(ho, hoStartPos, 180);
+            
+            // "호 에어컨" 텍스트
+            const hoNumWidth = ctx.measureText(ho).width;
+            ctx.fillStyle = '#64748b';
+            ctx.font = '700 80px sans-serif';
+            ctx.fillText('호 에어컨', hoStartPos + hoNumWidth + 20, 180);
 
             // 구분선
             ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 10;
             ctx.beginPath();
             ctx.moveTo(padding, 240);
             ctx.lineTo(canvas.width - padding, 240);
@@ -200,40 +224,31 @@
 
             const drawWithLabel = (img, x, y, w, h, label) => {
                 ctx.drawImage(img, x, y, w, h);
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-                ctx.fillRect(x, y, 200, 70);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(x, y, 220, 80);
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 36px sans-serif';
+                ctx.font = 'bold 40px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(label, x + 100, y + 48);
+                ctx.fillText(label, x + 110, y + 55);
             };
 
-            // 배치 시작점
             const startY = headerH + padding;
 
-            // 왼쪽 1열 (방3, 거실)
+            // 사진 배치
             drawWithLabel(images.room3, padding, startY, landscapeW, landscapeH, "방 3");
             drawWithLabel(images.living, padding, startY + landscapeH + padding, landscapeW, landscapeH, "거실");
 
-            // 왼쪽 2열 (방2, 방1)
             const col2X = padding * 2 + landscapeW;
             drawWithLabel(images.room2, col2X, startY, landscapeW, landscapeH, "방 2");
             drawWithLabel(images.room1, col2X, startY + landscapeH + padding, landscapeW, landscapeH, "방 1");
 
-            // 오른쪽 3열 (실외기실 세로)
             const col3X = padding * 3 + landscapeW * 2;
-            drawWithLabel(images.ac, col3X, startY, portraitW, portraitH, "실외기실");
+            drawWithLabel(images.ac, col3X, startY, portraitW, portraitH, "실외기");
 
-            // 파일 다운로드
-            try {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-                const link = document.createElement('a');
-                link.download = `${dong}동_${ho}호_현장리포트.jpg`;
-                link.href = dataUrl;
-                link.click();
-            } catch (e) {
-                alert("이미지 생성 중 오류가 발생했습니다.");
-            }
+            // 최종 미리보기 모달 띄우기 (사진 앱 저장 대응)
+            const finalImage = canvas.toDataURL('image/jpeg', 0.95);
+            document.getElementById('finalPreview').src = finalImage;
+            document.getElementById('resultModal').style.display = 'flex';
         }
     </script>
 </body>
